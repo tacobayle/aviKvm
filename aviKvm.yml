@@ -1,0 +1,102 @@
+---
+- hosts: kvm
+  gather_facts: no
+  become: true
+  become_user: root
+  become_method: sudo
+
+  vars_files:
+    - "vars/params.yml"
+
+  tasks:
+
+  - name: Update repositories cache and install the list of packages
+    become: true
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+    loop: "{{ packageList }}"
+
+  - name: Upgrade all packages to the latest version
+    become: true
+    apt:
+      name: "*"
+      state: latest
+
+  - name: Define a KVM network
+    virt_net:
+      command: define
+      name: "{{ item.name }}"
+      xml: '{{ lookup("template", "{{ kvm.networkTemplate }}") }}'
+    ignore_errors: yes
+    loop: "{{ kvm.networks }}"
+
+  - name: create a KVM Network
+    virt_net:
+      command: create
+      name: "{{ item.name }}"
+    ignore_errors: yes
+    loop: "{{ kvm.networks }}"
+
+  - name: Autostart the KVM Network
+    virt_net:
+      autostart: yes
+      name: "{{ item.name }}"
+    ignore_errors: yes
+    loop: "{{ kvm.networks }}"
+
+# Bash commands:
+#     virsh net-define /tmp/network.xml
+#     virsh net-autostart "{{ KvmNetworkName }}"
+#     virsh net-start "{{ KvmNetworkName }}"
+
+  - name: Generate avi_meta_controller.yml
+    template:
+      src: "{{ avi.controllerIpFile }}"
+      dest: avi_meta_controller.yml
+    delegate_to: 127.0.0.1
+    loop: "{{ kvm.domains }}"
+
+  - name: Generate iso avi_meta_controller.yml file
+    command: genisoimage -o config.iso avi_meta_controller.yml
+    delegate_to: 127.0.0.1
+
+  - name: Transfer iso file to the KVM host
+    copy:
+      src: config.iso
+      dest: ./config.iso
+
+  - name: Transfer Avi Qcow2 Image to the KVM host
+    copy:
+      src: "{{ avi.localPathQcow2File }}{{ avi.fileName }}"
+      dest: ./{{ avi.fileName }}
+      force: no
+
+  - name: define the Avi Controller
+    virt:
+        name: "{{ item.name }}"
+        command: define
+        xml: '{{ lookup("template", "{{ kvm.domainTemplate }}") }}'
+    ignore_errors: yes
+    loop: "{{ kvm.domains }}"
+
+  - name: start the Avi Controller
+    virt:
+        name: "{{ item.name }}"
+        state: running
+    ignore_errors: yes
+    loop: "{{ kvm.domains }}"
+
+  - name: Wait for port 443 to become open on Avi Controller
+    wait_for:
+      host: "{{ item.ip }}"
+      port: 443
+      delay: 10
+    loop: "{{ kvm.domains }}"
+
+  - name: Display Post Message Installation
+    debug:
+      msg: "The Avi Controller called {{ item.name }} is available at https://{{ item.ip }}"
+    loop: "{{ kvm.domains }}"
+    loop_control:
+      label: ""

@@ -1,0 +1,8 @@
+<network>
+  <name>{{ item.name }}</name>
+  <bridge name='{{ item.bridgeName }}'/>
+  <forward mode='route'>
+  </forward>
+  <ip address="{{ item.networkIp }}" netmask="{{ item.networkMask }}">
+  </ip>
+</network>
