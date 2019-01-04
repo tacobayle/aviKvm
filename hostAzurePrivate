@@ -1,0 +1,12 @@
+---
+all:
+  hosts:
+    jump:
+      ansible_host: 172.16.1.4
+    devstack:
+      ansible_host: 172.16.1.5
+    kvm:
+      ansible_host: 172.16.1.6
+  vars:
+    ansible_user: "avi"
+    ansible_ssh_private_key_file: "/home/avi/.ssh/id_rsa.azure"
