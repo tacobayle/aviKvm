@@ -5,10 +5,20 @@
   become_user: root
   become_method: sudo
 
+  vars:
+    ansible_become_pass: "{{ local.password }}"
+
   vars_files:
     - "vars/params.yml"
 
   tasks:
+
+  - name: Add routes locally
+    command: "ip route add {{ item.cidr }} via {{ item.nexthop }}"
+    loop: "{{ local.routes }}"
+    delegate_to: 127.0.0.1
+    ignore_errors: yes
+
 
   - name: Update repositories cache and install the list of packages
     become: true

@@ -31,3 +31,9 @@ avi:
   fileName: controller-17.2.14-9128.qcow2
   cpu: 6
   mem: 14336000
+
+local:
+  password: avi123
+  routes:
+    - cidr: 200.1.1.2/32
+      nexthop: 192.168.17.151
