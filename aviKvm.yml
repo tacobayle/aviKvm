@@ -81,6 +81,15 @@
       src: "{{ avi.localPathQcow2File }}{{ avi.fileName }}"
       dest: ./{{ avi.fileName }}
       force: no
+    when: not avi.googleDrive
+
+  - name: Download Avi Qcow2 Image to the KVM host
+    shell: |
+      curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=\
+      {{ avi.googleId }}" > /dev/null ; curl -Lb ./cookie \
+      "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}'\
+       ./cookie`&id={{ avi.googleId }}" -o {{ avi.fileName }}
+    when: avi.googleDrive
 
   - name: define the Avi Controller
     virt:

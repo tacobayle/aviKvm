@@ -9,7 +9,7 @@ Prerequisites:
 The Ansible playbook will work only on the host called "kvm":
 - Update, Upgrade, Install Apt packages (including KVM packages) on the KVM host
 - Create a new KVM Network (routed) and start it
-- Transfer the Avi Qcow2 image to the KVM host
+- Transfer the Avi Qcow2 image to the KVM host or download it
 - Create an iso file with network config (IP address, Mask, Gateway) and transfer it to the KVM host
 - Spin up a new instance for the Avi Controller (with the cdrom for IP parameters)
 - Check the Avi controller https reachability
