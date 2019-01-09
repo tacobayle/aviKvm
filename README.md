@@ -1,6 +1,6 @@
 # aviKvm
 Prerequisites:
-- Make sure Ansible and genisoimage are installed (in the ansible host)
+- Make sure genisoimage is installed (in the ansible host)
 - Make sure the Avi Qcow2 image is available as defined in the var/params.yml file
 - Make sure a VM based on Ubuntu 14.04.05 TLS is reachable with CPU virtualization enabled
 - cat /proc/cpuinfo | grep vmx | wc -l needs to be greater than 0
