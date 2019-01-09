@@ -104,6 +104,11 @@
     ignore_errors: yes
     loop: "{{ kvm.domains }}"
 
+# Bash commands:
+# virt-install --name "avi-controller" --virt-type kvm --ram=32768 --vcpus=8 \
+# --os-type=linux --graphics vnc --disk path=controller-17.2.14-9128.qcow2,\
+# device=disk,format=qcow2 --import --noautoconsole --network bridge=virbr0
+
   - name: Wait for port 443 to become open on Avi Controller
     wait_for:
       host: "{{ item.ip }}"
