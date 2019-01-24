@@ -19,5 +19,5 @@ ansible-playbook -i hostlocalKvm aviKvm.yml
 
 Script has been tested against:
 - KVM host runs Ubuntu 14.04.05 LTS
-- Avi 17.2.14
+- Avi 17.2.14, 18.1.3
 - Ansible 2.7.0
