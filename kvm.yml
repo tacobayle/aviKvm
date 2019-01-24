@@ -1,0 +1,72 @@
+---
+- hosts: kvm
+  gather_facts: no
+  become: true
+  become_user: root
+  become_method: sudo
+
+  # vars:
+  #   ansible_become_pass: "{{ local.password }}"
+
+  vars_files:
+    - "vars/params.yml"
+
+  tasks:
+
+
+  - name: Define a KVM network
+    virt_net:
+      command: define
+      name: "{{ item.name }}"
+      xml: '{{ lookup("template", "{{ kvm.networkTemplate }}") }}'
+    ignore_errors: yes
+    loop: "{{ kvm.networks }}"
+
+  - name: create a KVM Network
+    virt_net:
+      command: create
+      name: "{{ item.name }}"
+    ignore_errors: yes
+    loop: "{{ kvm.networks }}"
+
+  - name: Autostart the KVM Network
+    virt_net:
+      autostart: yes
+      name: "{{ item.name }}"
+    ignore_errors: yes
+    loop: "{{ kvm.networks }}"
+
+
+  - name: Generate avi_meta_controller.yml
+    template:
+      src: "{{ avi.controller.IpFile }}"
+      dest: "avi_meta_controller{{ item.id }}.yml"
+    delegate_to: 127.0.0.1
+    loop: "{{ kvm.domains }}"
+
+  - name: Generate iso avi_meta_controller.yml file
+    command: "genisoimage -o config{{ item.id }}.iso avi_meta_controller{{ item.id }}.yml"
+    delegate_to: 127.0.0.1
+    loop: "{{ kvm.domains }}"
+
+  - name: Transfer iso file to the KVM host
+    copy:
+      src: config{{ item.id }}.iso
+      dest: ./config{{ item.id }}.iso
+    loop: "{{ kvm.domains }}"
+
+
+  - name: define the Avi Controller
+    virt:
+        name: "{{ item.name }}"
+        command: define
+        xml: '{{ lookup("template", "{{ kvm.domainTemplate }}") }}'
+    ignore_errors: yes
+    loop: "{{ kvm.domains }}"
+
+  - name: start the Avi Controller
+    virt:
+        name: "{{ item.name }}"
+        state: running
+    ignore_errors: yes
+    loop: "{{ kvm.domains }}"

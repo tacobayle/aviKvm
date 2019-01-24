@@ -1,0 +1,55 @@
+---
+- hosts: kvm
+  gather_facts: no
+  become: true
+  become_user: root
+  become_method: sudo
+
+  vars:
+    ansible_become_pass: "{{ local.password }}"
+
+  vars_files:
+    - "vars/params.yml"
+
+  tasks:
+
+  - name: Add routes locally
+    command: "ip route add {{ item.cidr }} via {{ item.nexthop }}"
+    loop: "{{ local.routes }}"
+    delegate_to: 127.0.0.1
+    ignore_errors: yes
+
+
+  - name: Update repositories cache and install the list of packages
+    become: true
+    apt:
+      name: "{{ item }}"
+      update_cache: yes
+    loop: "{{ packageList }}"
+
+  - name: Upgrade all packages to the latest version
+    become: true
+    apt:
+      name: "*"
+      state: latest
+      force_apt_get: True
+    ignore_errors: yes
+
+  - name: Transfer Avi Qcow2 Image to the KVM host
+    copy:
+      src: "{{ avi.controller.localPathQcow2File }}"
+      dest: ./{{ avi.controller.localPathQcow2File | basename }}
+      force: no
+    when: not avi.controller.googleDrive
+
+  - name: Download Avi Qcow2 Image to the KVM host
+    shell: |
+      curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id={{ avi.controller.googleId }}" > /dev/null ; curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id={{ avi.controller.googleId }}" -o {{ avi.controller.localPathQcow2File | basename }}
+    when: avi.controller.googleDrive
+
+  - name: Duplicate qcow2 file for each vm
+    copy:
+      src: "{{ avi.controller.localPathQcow2File | basename }}"
+      dest: "{{ avi.controller.localPathQcow2File | basename }}.{{ item.id }}.qcow2"
+      remote_src: yes
+    loop: "{{ kvm.domains }}"

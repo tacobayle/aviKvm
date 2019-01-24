@@ -63,31 +63,40 @@
 
   - name: Generate avi_meta_controller.yml
     template:
-      src: "{{ avi.controllerIpFile }}"
-      dest: avi_meta_controller.yml
+      src: "{{ avi.controller.IpFile }}"
+      dest: "avi_meta_controller{{ item.id }}.yml"
     delegate_to: 127.0.0.1
     loop: "{{ kvm.domains }}"
 
   - name: Generate iso avi_meta_controller.yml file
-    command: genisoimage -o config.iso avi_meta_controller.yml
+    command: "genisoimage -o config{{ item.id }}.iso avi_meta_controller{{ item.id }}.yml"
     delegate_to: 127.0.0.1
+    loop: "{{ kvm.domains }}"
 
   - name: Transfer iso file to the KVM host
     copy:
-      src: config.iso
-      dest: ./config.iso
+      src: config{{ item.id }}.iso
+      dest: ./config{{ item.id }}.iso
+    loop: "{{ kvm.domains }}"
 
   - name: Transfer Avi Qcow2 Image to the KVM host
     copy:
-      src: "{{ avi.localPathQcow2File }}{{ avi.fileName }}"
-      dest: ./{{ avi.fileName }}
+      src: "{{ avi.controller.localPathQcow2File }}"
+      dest: ./{{ avi.controller.localPathQcow2File | basename }}
       force: no
-    when: not avi.googleDrive
+    when: not avi.controller.googleDrive
 
   - name: Download Avi Qcow2 Image to the KVM host
     shell: |
-      curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id={{ avi.googleId }}" > /dev/null ; curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id={{ avi.googleId }}" -o {{ avi.fileName }}
-    when: avi.googleDrive
+      curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id={{ avi.controller.googleId }}" > /dev/null ; curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id={{ avi.controller.googleId }}" -o {{ avi.fileName }}
+    when: avi.controller.googleDrive
+
+  - name: Duplicate qcow2 file for each vm
+    copy:
+      src: "{{ avi.fileName }}"
+      dest: "{{ avi.fileName }}.{{ item.id }}.qcow2"
+      remote_src: yes
+    loop: "{{ kvm.domains }}"
 
   - name: define the Avi Controller
     virt:
@@ -104,7 +113,7 @@
     ignore_errors: yes
     loop: "{{ kvm.domains }}"
 
-# Bash commands:
+# # Bash commands:
 # virt-install --name "avi-controller" --virt-type kvm --ram=32768 --vcpus=8 \
 # --os-type=linux --graphics vnc --disk path=controller-17.2.14-9128.qcow2,\
 # device=disk,format=qcow2 --import --noautoconsole --network bridge=virbr0

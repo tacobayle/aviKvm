@@ -19,28 +19,9 @@ kvm:
   domains:
     - name: avi-controller1
       id: 1
-      uuid: 09fb234f-542e-e688-8b0d-e7aebab8c9ab
       ip: 200.1.1.2
       mask: 255.255.255.0
       gw: 200.1.1.1
-      mac: 51:54:00:39:e0:fc
-      controllerIpFile: avi_meta_controller1.yml
-    - name: avi-controller2
-      id: 2
-      uuid: 09fb234f-542e-e688-8b0d-e7aebab8c9ac
-      ip: 200.1.1.2
-      mask: 255.255.255.0
-      gw: 200.1.1.1
-      mac: 51:54:00:40:e0:fc
-      controllerIpFile: avi_meta_controller2.yml
-    - name: avi-controller3
-      id: 3
-      uuid: 09fb234f-542e-e688-8b0d-e7aebab8c9ad
-      ip: 200.1.1.2
-      mask: 255.255.255.0
-      gw: 200.1.1.1
-      mac: 51:54:00:41:e0:fc
-      controllerIpFile: avi_meta_controller3.yml
 
 # uuid and mac address need to be variabilized
 
@@ -50,9 +31,8 @@ avi:
   fileName: controller-17.2.14-9128.qcow2
   cpu: 6
   mem: 14336000
-  googleDrive: yes
-  googleId:
-  # googleId: 1CljuVR3CWqEg4AJfeAR-0QmqqrkVq8W-  #controller-17.2.14-9128.qcow2
+  googleDrive: no
+  googleId: 1CljuVR3CWqEg4AJfeAR-0QmqqrkVq8W-
 #  fileName: controller-17.2.14-9128.qcow2
 #  googleId: 1eO0B8UaFOCz5pvXrNd3-PXs1sX5jwv3E
 
@@ -60,5 +40,5 @@ avi:
 local:
   password: avi123
   routes:
-    - cidr: 200.1.1.0/24
-      nexthop: 192.168.100.101
+    - cidr: 200.1.1.2/32
+      nexthop: 192.168.17.175

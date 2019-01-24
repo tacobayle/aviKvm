@@ -1,0 +1,130 @@
+---
+- hosts: localhost
+  connection: local
+
+  vars:
+    avi_credentials:
+      controller: kvm.domains.0.ip
+      username: admin
+      password: avi.controller.newPassword
+      api_version: avi.controller.version
+
+  vars_files:
+    - "vars/params.yml"
+
+
+  roles:
+    - role: "avinetworks.avisdk"
+
+  tasks:
+
+
+  - name: Wait for port 443 to become open on Avi Controller
+    wait_for:
+      host: "{{ item.ip }}"
+      port: 443
+      delay: 60
+    loop: "{{ kvm.domains }}"
+
+
+  - name: Update user password
+    avi_useraccount:
+      controller: "{{ avi_credentials.controller }}"
+      username: "{{ avi_credentials.username }}"
+      password: "{{ avi_credentials.password }}"
+      old_password: 58NFaGDJm(PJH0G
+      api_version: "{{ avi_credentials.api_version }}"
+    ignore_errors: yes
+
+  - name: Get main Cluster Information
+    avi_api_session:
+      controller: "{{ avi_credentials.controller }}"
+      username: "{{ avi_credentials.username }}"
+      password: "{{ avi_credentials.password }}"
+      api_version: "{{ avi_credentials.api_version }}"
+      http_method: get
+      path: cluster
+    register: cluster_info
+    when: avi.controller.cluster
+
+
+  - name: Configure Cluster object without ClusterIP
+    avi_cluster:
+      controller: "{{ avi_credentials.controller }}"
+      username: "{{ avi_credentials.username }}"
+      password: "{{ avi_credentials.password }}"
+      api_version: "{{ avi_credentials.api_version }}"
+      nodes:
+          -
+            name: "{{ avi_credentials.controller }}"
+            ip:
+              type: V4
+              addr: "{{ avi_credentials.controller }}"
+          -
+            name: "{{ kvm.domains.1.ip }}"
+            ip:
+              type: V4
+              addr: "{{ kvm.domains.1.ip }}"
+          -
+            name: "{{ kvm.domains.2.ip }}"
+            ip:
+              type: V4
+              addr: "{{ kvm.domains.2.ip }}"
+      name: "{{ avi.controller.clusterName }}"
+      uuid: "{{ cluster_info['obj'].uuid }}"
+    when: avi.controller.cluster and not avi.controller.clusterIpStatus
+
+  - name: Configure Cluster object with ClusterIP
+    avi_cluster:
+      controller: "{{ avi_credentials.controller }}"
+      username: "{{ avi_credentials.username }}"
+      password: "{{ avi_credentials.password }}"
+      api_version: "{{ avi_credentials.api_version }}"
+      nodes:
+          -
+            name: "{{ avi_credentials.controller }}"
+            ip:
+              type: V4
+              addr: "{{ avi_credentials.controller }}"
+          -
+            name: "{{ kvm.domains.1.ip }}"
+            ip:
+              type: V4
+              addr: "{{ kvm.domains.1.ip }}"
+          -
+            name: "{{ kvm.domains.2.ip }}"
+            ip:
+              type: V4
+              addr: "{{ kvm.domains.2.ip }}"
+      name: "{{ avi.controller.clusterName }}"
+      uuid: "{{ cluster_info['obj'].uuid }}"
+      virtual_ip:
+          addr: "{{ avi.controller.clusterIp }}"
+          type: V4
+    when: avi.controller.cluster and avi.controller.clusterIpStatus
+
+  - name: Display Post Message Installation
+    debug:
+      msg:
+        - "The Avi Controller is available at https://{{ kvm.domains.0.ip }}"
+        - "Username: admin"
+        - "Password: {{ avi.controller.newPassword }}"
+    when: not avi.controller.cluster
+
+  - name: Display Post Message Installation
+    debug:
+      msg:
+        - "A cluster has been built with the following clusterIp:"
+        - "https://{{ avi.controller.clusterIp }}"
+        - "Password: {{ avi.controller.newPassword }}"
+    when: avi.controller.cluster and avi.controller.clusterIpStatus
+
+  - name: Display Post Message Installation
+    debug:
+      msg:
+        - "A cluster has been build without Cluster IP with the following nodes:"
+        - "https://{{ kvm.domains.0.ip }} # which might be the leader"
+        - "https://{{ kvm.domains.1.ip }}"
+        - "https://{{ kvm.domains.2.ip }}"
+        - "Password: {{ avi.controller.newPassword }}"
+    when: avi.controller.cluster and not avi.controller.clusterIpStatus
