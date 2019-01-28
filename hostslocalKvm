@@ -2,7 +2,8 @@
 all:
   hosts:
     kvm:
-      ansible_host: 192.168.17.175
+      ansible_host: 192.168.17.151
+      
   vars:
     ansible_user: avi
     ansible_ssh_pass: avi123

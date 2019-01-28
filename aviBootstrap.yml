@@ -2,16 +2,17 @@
 - hosts: localhost
   connection: local
 
-  vars:
-    avi_credentials:
-      controller: kvm.domains.0.ip
-      username: admin
-      password: avi.controller.newPassword
-      api_version: avi.controller.version
 
   vars_files:
     - "vars/params.yml"
 
+
+  vars:
+    avi_credentials:
+      controller: "{{ kvm.domains.0.ip }}"
+      username: admin
+      password: "{{ avi.controller.newPassword }}"
+      api_version: "{{ avi.controller.version }}"
 
   roles:
     - role: "avinetworks.avisdk"
@@ -23,7 +24,7 @@
     wait_for:
       host: "{{ item.ip }}"
       port: 443
-      delay: 60
+      delay: 600
     loop: "{{ kvm.domains }}"
 
 
@@ -102,6 +103,19 @@
           addr: "{{ avi.controller.clusterIp }}"
           type: V4
     when: avi.controller.cluster and avi.controller.clusterIpStatus
+
+  - name: Configure Avi System parameters
+    avi_systemconfiguration:
+      avi_api_update_method: patch
+      avi_api_patch_op: add
+      controller: "{{ avi_credentials.controller }}"
+      username: "{{ avi_credentials.username }}"
+      password: "{{ avi_credentials.password }}"
+      api_version: "{{ avi_credentials.api_version }}"
+      global_tenant_config:
+        se_in_provider_context: "{{ avi.controller.systemconfiguration.global_tenant_config.se_in_provider_context }}"
+        tenant_access_to_provider_se: "{{ avi.controller.systemconfiguration.global_tenant_config.tenant_access_to_provider_se }}"
+        tenant_vrf: "{{ avi.controller.systemconfiguration.global_tenant_config.tenant_vrf }}"
 
   - name: Display Post Message Installation
     debug:

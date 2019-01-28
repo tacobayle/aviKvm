@@ -1,5 +1,0 @@
-<uuid>{{ item.uuid }}</uuid>
-
-      <mac address='52:54:00:39:e0:fc'/>
-
-fciv.exe C:\Users\nicolas.bayle\Documents\tech\bin\avi\18.1.5\docker_install-18.1.5-9249.tar.gz
