@@ -1,4 +1,3 @@
 ---
 - import_playbook: sysadmin.yml
 - import_playbook: kvm.yml
-- import_playbook: aviBootstrap.yml
