@@ -1,0 +1,11 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+---
+all:
+  children:
+  {% for item in jsonListPrivate %}
+    {{ item['name'] }}:
+      hosts:
+    {% for addr in item['ip'] %}
+        {{ addr }}:
+    {% endfor %}
+  {% endfor %}

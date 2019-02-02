@@ -66,3 +66,8 @@ local:
   routes:
     - cidr: 200.1.1.0/24
       nexthop: 192.168.100.101
+
+ansibleHost:
+  privateTemplate: hostsTemplate.j2
+  private:
+    - ../aviBootstrap/hostslocalKvm

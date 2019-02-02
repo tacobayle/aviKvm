@@ -5,8 +5,11 @@
   become_user: root
   become_method: sudo
 
-  # vars:
-  #   ansible_become_pass: "{{ local.password }}"
+  vars:
+    listIpcontroller: []
+    jsonListPrivate: []
+    dictController:
+      name: controller
 
   vars_files:
     - "vars/params.yml"
@@ -36,7 +39,6 @@
     ignore_errors: yes
     loop: "{{ kvm.networks }}"
 
-
   - name: Generate avi_meta_controller.yml
     template:
       src: "{{ avi.controller.IpFile }}"
@@ -55,7 +57,6 @@
       dest: ./config{{ item.id }}.iso
     loop: "{{ kvm.domains }}"
 
-
   - name: define the Avi Controller
     virt:
         name: "{{ item.name }}"
@@ -70,3 +71,24 @@
         state: running
     ignore_errors: yes
     loop: "{{ kvm.domains }}"
+
+
+  - name: generate a list of dictionary to create an ansible host
+    command: python3 generateListDict.py vars/params.yml
+    delegate_to: 127.0.0.1
+    register: listPrivate
+
+  # - debug: var=listPrivate.stdout
+
+  - set_fact:
+      jsonListPrivate: "{{ listPrivate.stdout | from_json }}"
+
+  # - debug: var=jsonListPrivate
+
+  - name: Create an ansible inventory host file for Avi controller(s)
+    template:
+      src: "{{ ansibleHost.privateTemplate }}"
+      dest: "{{ item }}"
+    delegate_to: 127.0.0.1
+    ignore_errors: yes
+    loop: "{{ ansibleHost.private }}"

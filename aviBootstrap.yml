@@ -24,7 +24,7 @@
     wait_for:
       host: "{{ item.ip }}"
       port: 443
-      delay: 600
+      delay: 10
     loop: "{{ kvm.domains }}"
 
 
