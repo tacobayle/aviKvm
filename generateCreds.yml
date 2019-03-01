@@ -1,0 +1,16 @@
+---
+- hosts: kvm
+  become: true
+  gather_facts: no
+  become_user: root
+  become_method: sudo
+
+  vars_files:
+    - "vars/params.yml"
+
+  tasks:
+
+  - name: generate Avi creds.yml file
+    command: "python3 generateCreds.py vars/params.yml {{ avi.password }} {{ avi.version }} {{ item }}"
+    delegate_to: 127.0.0.1
+    loop: "{{ avi.credentialsFile }}"

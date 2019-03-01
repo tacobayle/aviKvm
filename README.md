@@ -13,11 +13,12 @@ The Ansible playbook will work only on the host called "kvm":
 - Create an iso file with network config (IP address, Mask, Gateway) and transfer it to the KVM host
 - Spin up a new instance for the Avi Controller (with the cdrom for IP parameters)
 - Create a new ansible inventory with the IP of the controller VMs
+- create a new creds.yml file to configure the cluster
 
 Example:
 ansible-playbook -i hostslocalKvm main.yml
 
 Script has been tested against:
-- KVM host runs Ubuntu 14.04.05 LTS
+- KVM host runs Ubuntu 16.04.05 LTS
 - Avi 17.2.14, 18.1.3, 18.1.5
 - Ansible 2.7.0

@@ -23,18 +23,18 @@ kvm:
       ip: 200.1.1.11
       mask: 255.255.255.0
       gw: 200.1.1.1
-    # - name: avi-controller2
-    #   id: 2
-    #   uuid: 09fb234f-542e-e688-8b0d-e7aebab8c9ac
-    #   ip: 200.1.1.12
-    #   mask: 255.255.255.0
-    #   gw: 200.1.1.1
-    # - name: avi-controller3
-    #   id: 3
-    #   uuid: 09fb234f-542e-e688-8b0d-e7aebab8c9ad
-    #   ip: 200.1.1.13
-    #   mask: 255.255.255.0
-    #   gw: 200.1.1.1
+    - name: avi-controller2
+      id: 2
+      uuid: 09fb234f-542e-e688-8b0d-e7aebab8c9ac
+      ip: 200.1.1.12
+      mask: 255.255.255.0
+      gw: 200.1.1.1
+    - name: avi-controller3
+      id: 3
+      uuid: 09fb234f-542e-e688-8b0d-e7aebab8c9ad
+      ip: 200.1.1.13
+      mask: 255.255.255.0
+      gw: 200.1.1.1
 
 avi:
   controller:
@@ -47,10 +47,6 @@ avi:
     # googleId: 1CljuVR3CWqEg4AJfeAR-0QmqqrkVq8W- # v17.2.14
     # googleId: 1p1uXEkufujoHGNbojGMNvrBnXEUr0HOo # v18.1.5
     googleId: 1eO0B8UaFOCz5pvXrNd3-PXs1sX5jwv3E
-  credentialsFile:
-    - ../aviBootstrap/vars/creds.yml
-  version: 18.1.5
-  password: Avi_2019
     # newPassword: Avi_2019
     # version: 18.1.5
     # cluster: false
